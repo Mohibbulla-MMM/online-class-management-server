@@ -123,6 +123,20 @@ async function run() {
         })
 
         // ############# user collection #############
+        app.get('/users', async (req, res) => {
+            try {
+
+                const result = await usersCollection.find().toArray()
+                // console.log(result);
+                res.send(result)
+                console.log("all user get ");
+            }
+            catch (err) {
+                console.log(err);
+                res.send({ status: false })
+            }
+        })
+        // user add //signup /googlepupup
         app.post('/users', async (req, res) => {
             try {
                 const user = req.body
@@ -142,6 +156,21 @@ async function run() {
                 console.log(err);
                 res.send({ status: false })
             }
+        })
+        // user role chaker api // userolechaker 
+        app.get('/user-role-chaker/:email', async (req, res) => {
+            try {
+                const email = req?.params?.email;
+                console.log(email);
+                const query = { email: email }
+                const result = await usersCollection.findOne(query)
+                res.send(result)
+                console.log("user role chaker api ");
+            }
+            catch (err) {
+                console.log(err);
+            }
+
         })
 
 
