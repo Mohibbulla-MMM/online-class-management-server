@@ -34,7 +34,35 @@ async function run() {
 
 
         // ############# class collection #############
-        // class add //add class page
+        //all class get  // useAllClasses
+        app.get('/classes', async (req, res) => {
+            try {
+                const result = await classCollection.find().toArray()
+                console.log("all class get ");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log(err);
+            }
+        })
+        
+        //single class get  // usesingleclass
+        app.get('/classes/:id', async (req, res) => {
+            try {
+                const id = req.params.id
+                const query = { _id: new ObjectId(id) }
+                const result = await classCollection.findOne(query)
+                console.log("single class get ");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log(err);
+            }
+        })
+
+        // class add //addclass page
         app.post('/classes', async (req, res) => {
             try {
                 const data = req.body;
