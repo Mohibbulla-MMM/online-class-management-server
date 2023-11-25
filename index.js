@@ -9,7 +9,7 @@ const port = process.env.PORT || 7000
 app.use(express.json())
 app.use(cors())
 
- 
+
 
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster0.xevn9vs.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -32,7 +32,22 @@ async function run() {
         const usersCollection = client.db("teach-on-easy").collection('users')
         const paymentsCollection = client.db("teach-on-easy").collection('payments')
 
-        
+
+        // ############# class collection #############
+        // class add //add class page
+        app.post('/classes', async (req, res) => {
+            try {
+                const data = req.body;
+                const result = await classCollection.insertOne(data)
+                console.log("class add success");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log(err);
+            }
+        })
+
 
 
         await client.db("admin").command({ ping: 1 });
