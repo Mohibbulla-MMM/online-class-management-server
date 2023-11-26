@@ -172,8 +172,28 @@ async function run() {
             }
 
         })
-
-
+        // user-to-admin api // dashbord > users 
+        app.patch('/user-to-admin/:id', async (req, res) => {
+            try {
+                const id = req.params.id;
+                console.log(id);
+                const query = { _id: new ObjectId(id) }
+                const updateData = {
+                    $set: {
+                       role: 'admin'
+                    }
+                }
+                const options = { upsert: true };
+                const result = await usersCollection.updateOne(query, updateData ,options )
+                console.log(result);
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log(err);
+            }
+        })
+       
 
         // ########## ###### stripe payment and payment collection  #####################
         app.post('/create-payment-intent', async (req, res) => {
