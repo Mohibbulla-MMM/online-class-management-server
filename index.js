@@ -71,31 +71,46 @@ async function run() {
         }
 
         // ############# class collection #############
-        //all class get  // useAllClasses
-        app.get('/classes', async (req, res) => {
+        //all class get  // useAllClasses publick route
+        app.get('/classes/all', async (req, res) => {
             try {
-                const result = await classCollection.find().toArray()
+                const query = { status: 'approved' }
+                const result = await classCollection.find(query).toArray()
                 console.log("all class get ");
                 res.send(result)
             }
             catch (err) {
                 res.send({ status: false })
-                console.log(err);
+                console.log("all class get", err);
+            }
+        })
+
+        //all class get  // useAllClass admin route
+        app.get('/classes', tokenVarify, verifyAdmin, async (req, res) => {
+            try {
+
+                const result = await classCollection.find().toArray()
+                // console.log("all class get ");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log("all class get", err);
             }
         })
 
         //single class get  // usesingleclass
         app.get('/classes/:id', async (req, res) => {
             try {
-                const id = req.params.id
+                const id = req.params?.id
                 const query = { _id: new ObjectId(id) }
                 const result = await classCollection.findOne(query)
-                console.log("single class get ");
+                // console.log("single class get ");
                 res.send(result)
             }
             catch (err) {
                 res.send({ status: false })
-                console.log(err);
+                console.log("single class get ", err);
             }
         })
 
@@ -109,7 +124,7 @@ async function run() {
             }
             catch (err) {
                 res.send({ status: false })
-                console.log(err);
+                console.log("class add success", err);
             }
         })
         // update one (totalenroll filed update) // payment
@@ -125,9 +140,9 @@ async function run() {
                         totalEnroll: data?.totalEnroll ? data?.totalEnroll + 1 : 1,
                     }
                 }
-                const options = { upsert: true };
+                // const options = { upsert: true };
                 const result = await classCollection.updateOne(query, updateData)
-                console.log(result);
+                // console.log(result);
                 res.send(result)
             }
             catch (err) {
@@ -140,8 +155,6 @@ async function run() {
         // update one (status filed approved ) // dashbord > allClass admin route
         app.patch('/classes/approved/:id', tokenVarify, verifyAdmin, async (req, res) => {
             try {
-
-
                 const id = req.params?.id;
                 // console.log(id);
                 const query = { _id: new ObjectId(id) }
@@ -152,7 +165,7 @@ async function run() {
                 }
                 const options = { upsert: true };
                 const result = await classCollection.updateOne(query, updateData, options)
-                console.log(result);
+                // console.log(result);
                 res.send(result)
             }
             catch (err) {
@@ -183,7 +196,34 @@ async function run() {
             }
         })
 
+        // my enroll class //myEnrollClass 
+        //all class get  // useAllClass admin route
+        // app.get('/my-enroll-class', async (req, res) => {
+        //     try {
+        //         const data = req.body
+        //         console.log({ data });
+        //         const result = await classCollection.find().toArray()
+        //         res.send(result)
+        //         // console.log("my enroll all class get");
+        //     }
+        //     catch (err) {
+        //         res.send({ status: false })
+        //         console.log("my enroll all class get", err);
+        //     }
+        // })
+        app.get('/my-class', async (req, res) => {
+            const data = req.body;
+            console.log({ data }, ">>>>>>>>>>>>>>>>>>>>");
+            // const params = req.query
+            // console.log(params);
+            // const result = await classCollection.find().toArray()
+            res.send({ status: true })
+            // console.log(result);
+            // console.log(data);
 
+            // console.log("my enroll class get api ", err);
+
+        })
 
 
 
@@ -200,11 +240,26 @@ async function run() {
                 res.send({ status: false })
             }
         })
+        // user profile info get // myprofile 
+        app.get('/users/profile/:email', tokenVarify, async (req, res) => {
+            try {
+                const email = req.params?.email;
+                const query = { email: email }
+                const result = await usersCollection.findOne(query)
+                // console.log(result);
+                res.send(result)
+                // console.log("user profile info get ");
+            }
+            catch (err) {
+                console.log("user profile info get ", err);
+                res.send({ status: false })
+            }
+        })
         // user add //signup /googlepupup
         app.post('/users', async (req, res) => {
             try {
                 const user = req.body
-                console.log(user);
+                // console.log(user);
                 const query = { email: user.email };
                 const isExist = await usersCollection.findOne(query)
                 if (isExist) {
@@ -225,7 +280,7 @@ async function run() {
         app.get('/user-role-chaker/:email', async (req, res) => {
             try {
                 const email = req?.params?.email;
-                console.log(email);
+                // console.log(email);
                 const query = { email: email }
                 const result = await usersCollection.findOne(query)
                 res.send(result)
@@ -240,7 +295,7 @@ async function run() {
         app.patch('/user-to-admin/:id', tokenVarify, async (req, res) => {
             try {
                 const id = req.params.id;
-                console.log(id);
+                // console.log(id);
                 const query = { _id: new ObjectId(id) }
                 const updateData = {
                     $set: {
@@ -259,19 +314,42 @@ async function run() {
         })
 
         // user-delete api // dashbord > users 
-        app.patch('/user-delete/:id', tokenVarify, async (req, res) => {
+        app.delete('/user-delete/:id', tokenVarify, async (req, res) => {
             try {
                 const id = req.params.id;
-                console.log(id);
+                // console.log(id);
                 const query = { _id: new ObjectId(id) }
                 const result = await usersCollection.deleteOne(query,)
                 // console.log(result);
-                console.log("user delete");
+                // console.log("user delete");
                 res.send(result)
             }
             catch (err) {
                 res.send({ status: false })
-                console.log(err);
+                console.log("user delete", err);
+            }
+        })
+
+        // user-delete api // dashbord > profile  
+        app.patch('/user/profile-update/:id', tokenVarify, async (req, res) => {
+            try {
+                const id = req.params.id;
+                const data = req.body
+                // console.log(id);
+                const query = { _id: new ObjectId(id) }
+                const updateDoc = {
+                    $set: {
+                        phone: data.phone,
+                    }
+                }
+                const result = await usersCollection.updateOne(query, updateDoc)
+                // console.log(result);
+                console.log("user update ");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log("user update", err);
             }
         })
 
@@ -283,7 +361,7 @@ async function run() {
         app.post('/create-payment-intent', async (req, res) => {
             try {
                 const { price } = req.body;
-                console.log({ price });
+                // console.log({ price });
                 const amount = parseInt(price * 100)
                 const paymentIntent = await stripe.paymentIntents.create({
                     amount: amount,
@@ -292,7 +370,7 @@ async function run() {
                         "card"
                     ],
                 })
-                console.log("paymentIntent create ");
+                // console.log("paymentIntent create ");
                 // res.send(
                 //     "bclientSecret: paymentIntent.client_secret,"
                 // )
@@ -301,7 +379,7 @@ async function run() {
                 })
             }
             catch (err) {
-                console.log(err);
+                console.log("paymentIntent create ", err);
             }
         })
         // user payment add // payment 
@@ -311,12 +389,39 @@ async function run() {
                 // console.log(data);
                 const result = await paymentsCollection.insertOne(data)
                 res.send(result)
-                console.log('user class purcese');
+                // console.log('user class purcese');
             }
             catch (err) {
+                console.log("user class purcese", err);
+            }
+        })
+        // user enrole classes // useEnroleClass 
+        app.get("/payment/user/:email", tokenVarify, async (req, res) => {
+            try {
+                const email = req.params?.email;
+                // console.log(email);
+                const query = { email }
+                const result = await paymentsCollection.find(query).toArray()
+                // res.send(result)
+                // console.log(result);
+                if (result) {
+                    // const allId = result?.map(item => item?.classId)
+                    // console.log(allId);
+                    const query = {
+                        _id:
+                            { $in: result.map(id => new ObjectId(id?.classId)) }
+                    }
+                    // console.log(query);
+                    const userClasses = await classCollection.find(query).toArray()
+                    res.send(userClasses)
+                }
+            }
+            catch (err) {
+                res.send({ status: false })
                 console.log(err);
             }
         })
+
 
 
 
