@@ -55,6 +55,20 @@ async function run() {
         const usersCollection = client.db("teach-on-easy").collection('users')
         const paymentsCollection = client.db("teach-on-easy").collection('payments')
 
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>>', email);
+            const query = { email: email }
+            const user = await usersCollection.findOne(query);
+            // console.log('>>>>>>>>>>>>>>>>>>>>>>>>', user);
+            const isAdmin = user?.role === 'admin'
+            // console.log({ isAdmin });
+            console.log(`${email} <----: Admin roll :---> ${isAdmin}`);
+            if (!isAdmin) {
+                return res.status(403).send({ Message: 'Forbiden access' })
+            }
+            next()
+        }
 
         // ############# class collection #############
         //all class get  // useAllClasses
@@ -86,7 +100,7 @@ async function run() {
         })
 
         // class add //addclass page
-        app.post('/classes', async (req, res) => {
+        app.post('/classes', tokenVarify, async (req, res) => {
             try {
                 const data = req.body;
                 const result = await classCollection.insertOne(data)
@@ -123,9 +137,8 @@ async function run() {
         })
 
         // ############# user collection #############
-        app.get('/users', async (req, res) => {
+        app.get('/users/all', tokenVarify, verifyAdmin, async (req, res) => {
             try {
-
                 const result = await usersCollection.find().toArray()
                 // console.log(result);
                 res.send(result)
@@ -173,18 +186,18 @@ async function run() {
 
         })
         // user-to-admin api // dashbord > users 
-        app.patch('/user-to-admin/:id', async (req, res) => {
+        app.patch('/user-to-admin/:id', tokenVarify, async (req, res) => {
             try {
                 const id = req.params.id;
                 console.log(id);
                 const query = { _id: new ObjectId(id) }
                 const updateData = {
                     $set: {
-                       role: 'admin'
+                        role: 'admin'
                     }
                 }
                 const options = { upsert: true };
-                const result = await usersCollection.updateOne(query, updateData ,options )
+                const result = await usersCollection.updateOne(query, updateData, options)
                 console.log(result);
                 res.send(result)
             }
@@ -193,7 +206,24 @@ async function run() {
                 console.log(err);
             }
         })
-       
+
+        // user-delete api // dashbord > users 
+        app.patch('/user-delete/:id', tokenVarify, async (req, res) => {
+            try {
+                const id = req.params.id;
+                console.log(id);
+                const query = { _id: new ObjectId(id) }
+                const result = await usersCollection.deleteOne(query,)
+                // console.log(result);
+                console.log("user delete");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log(err);
+            }
+        })
+
 
         // ########## ###### stripe payment and payment collection  #####################
         app.post('/create-payment-intent', async (req, res) => {
