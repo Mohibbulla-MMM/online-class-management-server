@@ -53,6 +53,7 @@ async function run() {
         const classCollection = client.db("teach-on-easy").collection('class')
         const feedbackCollection = client.db("teach-on-easy").collection('feedback')
         const usersCollection = client.db("teach-on-easy").collection('users')
+        const teachersCollection = client.db("teach-on-easy").collection('teachers')
         const paymentsCollection = client.db("teach-on-easy").collection('payments')
 
         const verifyAdmin = async (req, res, next) => {
@@ -69,6 +70,34 @@ async function run() {
             }
             next()
         }
+
+        // ############# teachers collection #############
+        //teacher uer to teacher //teact on easy form
+        app.post('/teachers/teacher', async (req, res) => {
+            try {
+                const data = req.body;
+                const result = await teachersCollection.insertOne(data)
+                res.send(result)
+            }
+            catch (err) {
+                console.log('teacher request post err', err);
+            }
+        })
+        // teachet requst chaker // useTeacherRequest  //teact on easy form
+        app.get('/teachers/:email', async (req, res) => {
+            try {
+                const email = req?.params?.email;
+                const query = { email: email }
+                const result = await teachersCollection.findOne(query)
+                res.send({ status: result?.status || 'user' })
+                // console.log(result.status);
+            }
+            catch (err) {
+                console.log('teacher request post err', err);
+            }
+        })
+
+
 
         // ############# class collection #############
         //all class get  // useAllClasses publick route
@@ -196,34 +225,7 @@ async function run() {
             }
         })
 
-        // my enroll class //myEnrollClass 
-        //all class get  // useAllClass admin route
-        // app.get('/my-enroll-class', async (req, res) => {
-        //     try {
-        //         const data = req.body
-        //         console.log({ data });
-        //         const result = await classCollection.find().toArray()
-        //         res.send(result)
-        //         // console.log("my enroll all class get");
-        //     }
-        //     catch (err) {
-        //         res.send({ status: false })
-        //         console.log("my enroll all class get", err);
-        //     }
-        // })
-        app.get('/my-class', async (req, res) => {
-            const data = req.body;
-            console.log({ data }, ">>>>>>>>>>>>>>>>>>>>");
-            // const params = req.query
-            // console.log(params);
-            // const result = await classCollection.find().toArray()
-            res.send({ status: true })
-            // console.log(result);
-            // console.log(data);
 
-            // console.log("my enroll class get api ", err);
-
-        })
 
 
 
