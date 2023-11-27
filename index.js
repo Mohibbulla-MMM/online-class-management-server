@@ -76,6 +76,11 @@ async function run() {
         app.post('/teachers/teacher', async (req, res) => {
             try {
                 const data = req.body;
+                const query = { email: data?.email }
+                const userFind = await teachersCollection.find(query).toArray()
+                if (userFind) {
+                    await teachersCollection.deleteOne(query)
+                }
                 const result = await teachersCollection.insertOne(data)
                 res.send(result)
             }
@@ -90,10 +95,80 @@ async function run() {
                 const query = { email: email }
                 const result = await teachersCollection.findOne(query)
                 res.send({ status: result?.status || 'user' })
-                // console.log(result.status);
+                console.log(result?.status);
             }
             catch (err) {
                 console.log('teacher request post err', err);
+            }
+        })
+        //  all teacher get admin route // teacherRequest  
+        app.get('/request/teachers', tokenVarify, verifyAdmin, async (req, res) => {
+            try {
+                const result = await teachersCollection.find().toArray()
+                res.send(result)
+                // console.log({result});
+            }
+            catch (err) {
+                console.log('teacher request post err', err);
+            }
+        })
+        // teacher request approved api // teacherRequest
+        app.patch('/request-approved/:id', tokenVarify, verifyAdmin, async (req, res) => {
+            try {
+                const id = req?.params?.id;
+                const query = { _id: new ObjectId(id) }
+                const updateDoc = {
+                    $set: {
+                        status: 'approved'
+                    }
+                }
+                const result = await teachersCollection.updateOne(query, updateDoc)
+                // ========== user role update +========
+                const email = req.body?.email
+                console.log({ email });
+                const userQuery = { email: email }
+                const userUpdateDoc = {
+                    $set: {
+                        role: 'teacher'
+                    }
+                }
+                // console.log({ userQuery });
+                const userRes = await usersCollection.updateOne(userQuery, userUpdateDoc)
+                // console.log({ userRes });
+                // console.log(result);
+                res.send(result)
+            }
+            catch (err) {
+                console.log('teacher request approve err', err);
+            }
+        })
+        // teacher request reject api // teacherRequest
+        app.patch('/request-rejected/:id', tokenVarify, verifyAdmin, async (req, res) => {
+            try {
+                const id = req?.params?.id;
+                const query = { _id: new ObjectId(id) }
+                const updateDoc = {
+                    $set: {
+                        status: 'rejected'
+                    }
+                }
+                const result = await teachersCollection.updateOne(query, updateDoc)
+                // ========== user role update +========
+                const email = req.body?.email
+                const userQuery = { email: email }
+                const userUpdateDoc = {
+                    $set: {
+                        role: 'user'
+                    }
+                }
+                const userRes = await usersCollection.updateOne(userQuery, userUpdateDoc)
+                // console.log({ email });
+                // console.log({ userQuery });
+                // console.log({ userRes });
+                res.send(result)
+            }
+            catch (err) {
+                console.log('teacher request approve err', err);
             }
         })
 
@@ -140,6 +215,21 @@ async function run() {
             catch (err) {
                 res.send({ status: false })
                 console.log("single class get ", err);
+            }
+        })
+
+        //my class all get  // useMyClass // teacher route
+        app.get('/classes/my-class/:email', async (req, res) => {
+            try {
+                const email = req.params?.email
+                const query = { email: email }
+                const result = await classCollection.find(query).toArray()
+                // console.log("single class get ");
+                res.send(result)
+            }
+            catch (err) {
+                // res.send({ status: false })
+                console.log("my all class get err: ", err);
             }
         })
 
@@ -243,12 +333,13 @@ async function run() {
             }
         })
         // user profile info get // myprofile 
-        app.get('/users/profile/:email', tokenVarify, async (req, res) => {
+        app.get('/users/profile/:email', async (req, res) => {
             try {
                 const email = req.params?.email;
+                console.log({ email });
                 const query = { email: email }
                 const result = await usersCollection.findOne(query)
-                // console.log(result);
+                console.log({ result });
                 res.send(result)
                 // console.log("user profile info get ");
             }
@@ -306,7 +397,7 @@ async function run() {
                 }
                 const options = { upsert: true };
                 const result = await usersCollection.updateOne(query, updateData, options)
-                console.log(result);
+                // console.log(result);
                 res.send(result)
             }
             catch (err) {
