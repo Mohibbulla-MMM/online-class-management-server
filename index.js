@@ -269,6 +269,41 @@ async function run() {
                 console.log(err);
             }
         })
+        // update one (totalenroll filed update) // teacher dashbord // myclassUpdate 
+        app.put('/classes/:id', tokenVarify, async (req, res) => {
+            try {
+                const data = req.body;
+                // console.log(data);
+                const id = req.params?.id
+                console.log(id);
+                const query = { _id: new ObjectId(id) }
+                const updateData = {
+                    $set: {
+                        title: data.title,
+                        name: data.name,
+                        category: data.category,
+                        date: data.date,
+                        totalTime: data.totalTime,
+                        email: data.email,
+                        totalEnroll: data.totalEnroll,
+                        price: data.price,
+                        description: data.description,
+                        image: data.image,
+                        avater: data.avater,
+                        status: data.status,
+                        progress: data.progress,
+                    }
+                }
+                // const options = { upsert: true };
+                const result = await classCollection.updateOne(query, updateData)
+                // console.log(result);
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log(err);
+            }
+        })
 
 
         // update one (status filed approved ) // dashbord > allClass admin route
