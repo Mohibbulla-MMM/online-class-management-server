@@ -284,7 +284,7 @@ async function run() {
             try {
                 const query = { status: 'approved' }
                 const result = await classCollection.find(query).toArray()
-                console.log("all class get ");
+                // console.log("all class get ");
                 res.send(result)
             }
             catch (err) {
@@ -301,7 +301,7 @@ async function run() {
                     totalEnroll: -1
                 }
                 const result = await classCollection.find().sort(sort).limit(10).toArray()
-                console.log("all class get ");
+                // console.log("all class get ");
                 res.send(result)
             }
             catch (err) {
