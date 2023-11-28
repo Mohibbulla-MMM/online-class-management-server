@@ -54,8 +54,10 @@ async function run() {
         const feedbackCollection = client.db("teach-on-easy").collection('feedback')
         const usersCollection = client.db("teach-on-easy").collection('users')
         const teachersCollection = client.db("teach-on-easy").collection('teachers')
-        const paymentsCollection = client.db("teach-on-easy").collection('payments')
 
+        const teacherAssignmentCollection = client.db("teach-on-easy").collection('teacherAssignment')
+        const studentAssignmentCollection = client.db("teach-on-easy").collection('userAssignment')
+        const paymentsCollection = client.db("teach-on-easy").collection('payments')
         const verifyAdmin = async (req, res, next) => {
             const email = req.decoded.email;
             // console.log('>>>>>>>>>>>>>>>>>>>>>>>>', email);
@@ -70,6 +72,96 @@ async function run() {
             }
             next()
         }
+
+        // ############# teachers collection #############
+        // student assignment feed api // myenrollclass details 
+        // feedback
+        app.post('/feedback', tokenVarify, async (req, res) => {
+            try {
+                const data = req.body;
+                console.log(data);
+                const result = await feedbackCollection.insertOne(data)
+                res.send(result)
+            }
+            catch (err) {
+                console.log("Student feedback submit err ", err);
+            }
+        })
+        // student assignment feedback api // home > teitimonial  
+        app.get('/feedback', async (req, res) => {
+            try {
+                const result = await feedbackCollection.find().toArray()
+                res.send(result)
+            }
+            catch (err) {
+                console.log("all feedback  err ", err);
+            }
+        })
+
+
+
+
+        // ############# teachers collection #############
+        // u-assignment
+        // teacher assignment acreate api // myclass details 
+        app.post('/u-assignment', tokenVarify, async (req, res) => {
+            try {
+                const data = req.body;
+                console.log(data);
+                const result = await studentAssignmentCollection.insertOne(data)
+                res.send(result)
+            }
+            catch (err) {
+                console.log("Teacher assignment create err; ", err);
+            }
+        })
+
+        // student assignment find // progress section
+        app.get('/u-assignment/:id', tokenVarify, async (req, res) => {
+            try {
+                const id = req.params?.id;
+                const query = { assignmentId: id };
+                const result = await studentAssignmentCollection.find(query).toArray();
+                res.send(result)
+                // console.log({result});
+                // console.log(id);
+            }
+            catch (err) {
+                console.log("Teacher assignment create err; ", err);
+            }
+        })
+
+        // ############# teachers collection #############
+        // teacher assignment acreate api // myclass details 
+        app.post('/t-assignment', tokenVarify, async (req, res) => {
+            try {
+                const data = req.body
+                // console.log(data);
+                const result = await teacherAssignmentCollection.insertOne(data)
+                res.send(result)
+            }
+            catch (err) {
+                console.log("Teacher assignment create err; ", err);
+            }
+        })
+        // teacher assignment acreate api // myclass details //ProgressSection
+        app.get('/t-assignment/:id', tokenVarify, async (req, res) => {
+            try {
+                const id = req.params?.id
+                const query = { assignmentId: id }
+
+                // console.log(data);
+                const result = await teacherAssignmentCollection.find(query).toArray()
+                res.send(result)
+                // console.log({ id });
+                // console.log('assignment result', { result });
+            }
+            catch (err) {
+                console.log("Teacher assignment get err; ", err);
+            }
+        })
+
+
 
         // ############# teachers collection #############
         //teacher uer to teacher //teact on easy form
@@ -176,6 +268,18 @@ async function run() {
 
         // ############# class collection #############
         //all class get  // useAllClasses publick route
+        app.get('/total/class', async (req, res) => {
+            try {
+
+                const result = await classCollection.estimatedDocumentCount()
+                res.send({ counter: result })
+            }
+            catch (err) {
+                // res.send({ status: false })
+                console.log("all class estimate counte ", err);
+            }
+        })
+        //all class get  // useAllClasses publick route
         app.get('/classes/all', async (req, res) => {
             try {
                 const query = { status: 'approved' }
@@ -186,6 +290,23 @@ async function run() {
             catch (err) {
                 res.send({ status: false })
                 console.log("all class get", err);
+            }
+        })
+
+        //all class srot -6  // popular class / home page
+        app.get('/classes/popular', async (req, res) => {
+            try {
+                // const query = { status: 'approved' }
+                const sort = {
+                    totalEnroll: -1
+                }
+                const result = await classCollection.find().sort(sort).limit(10).toArray()
+                console.log("all class get ");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log("all class sort totalEnroll", err);
             }
         })
 
@@ -203,6 +324,20 @@ async function run() {
             }
         })
 
+        //single class get  // usesingleclass
+        app.delete('/classes/:id', async (req, res) => {
+            try {
+                const id = req.params?.id
+                const query = { _id: new ObjectId(id) }
+                const result = await classCollection.deleteOne(query)
+                // console.log("single class get ");
+                res.send(result)
+            }
+            catch (err) {
+                res.send({ status: false })
+                console.log("single class delete  ", err);
+            }
+        })
         //single class get  // usesingleclass
         app.get('/classes/:id', async (req, res) => {
             try {
@@ -367,6 +502,20 @@ async function run() {
                 res.send({ status: false })
             }
         })
+        //  total ueer estimate counte / aboute
+        app.get('/users/counte', async (req, res) => {
+            try {
+                const result = await usersCollection.estimatedDocumentCount()
+                res.send({ counter: result })
+                // console.log("all user estimate document counte ");
+            }
+            catch (err) {
+                console.log("all user estimate document counte", err);
+                // res.send({ status: false })
+            }
+        })
+
+
         // user profile info get // myprofile 
         app.get('/users/profile/:email', async (req, res) => {
             try {
@@ -547,6 +696,18 @@ async function run() {
             catch (err) {
                 res.send({ status: false })
                 console.log(err);
+            }
+        })
+        // user enrole classes // home page // about/useabout 
+        app.get("/enroll/all", async (req, res) => {
+            try {
+                const result = await paymentsCollection.estimatedDocumentCount()
+                res.send({ counter: result })
+                console.log(result);
+            }
+            catch (err) {
+                // res.send({ status: false })
+                console.log("enroll/all get ", err);
             }
         })
 
