@@ -299,10 +299,19 @@ async function run() {
         //all class get  // useAllClasses publick route
         app.get('/classes/all', async (req, res) => {
             try {
-                const query = { status: 'approved' }
-                const result = await classCollection.find(query).toArray()
-                // console.log("all class get ");
-                res.send(result)
+                const page = parseFloat(req.query?.page)
+                const size = parseFloat(req.query?.size)
+                const query = {
+                    status: "approved"
+                }
+                const result = await classCollection.find(query)
+                    .skip(page * size)
+                    .limit(size)
+                    .toArray();
+                res.send(result);
+                // console.log('pagination ', page, size);
+                // console.log("all class get ", { result });
+
             }
             catch (err) {
                 res.send({ status: false })
@@ -501,7 +510,21 @@ async function run() {
                 console.log('class admin rejected', err);
             }
         })
-
+        //  total calass estimate counte / AllClass page pagination
+        app.get('/classes-counter', async (req, res) => {
+            try {
+                const query = {
+                    status: "approved"
+                }
+                const result = await classCollection.find(query).toArray()
+                res.send({ counter: result?.length })
+                // console.log("all user estimate document counte ");
+            }
+            catch (err) {
+                console.log("all class estimate document counte", err);
+                // res.send({ status: false })
+            }
+        })
 
 
 
@@ -517,6 +540,20 @@ async function run() {
             catch (err) {
                 console.log(err);
                 res.send({ status: false })
+            }
+        })
+
+        app.get('/users/our-tech', async (req, res) => {
+            try {
+                const query = { role: "teacher" }
+                const result = await usersCollection.find(query).toArray()
+                // console.log(result);
+                res.send(result)
+                // console.log("all Our teacher get ");
+            }
+            catch (err) {
+                console.log("all Our teacher get ", err);
+                // res.send({ status: false })
             }
         })
         //  total ueer estimate counte / aboute
