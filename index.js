@@ -47,7 +47,7 @@ const tokenVarify = (req, res, next) => {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
 
         const classCollection = client.db("teach-on-easy").collection('class')
@@ -95,6 +95,23 @@ async function run() {
             }
             catch (err) {
                 console.log("all feedback  err ", err);
+            }
+        })
+
+        // student assignment feedback api // admin > alclass > seeprogress   
+        app.get('/feedback-sigle/:id', tokenVarify, verifyAdmin, async (req, res) => {
+            try {
+                const id = req.params?.id
+                // console.log("single feedback err: ",   { id });
+                const query = { assignmentId: id }
+                const result = await feedbackCollection.find(query).toArray()
+                // console.log("single feedback err: ", { result }, { id });
+
+                res.send(result || [])
+
+            }
+            catch (err) {
+                console.log("single feedback err: ", err);
             }
         })
 
@@ -561,6 +578,7 @@ async function run() {
                 const query = { email: email }
                 const result = await usersCollection.findOne(query)
                 res.send(result)
+                console.log({ result });
                 console.log("user role chaker api ");
             }
             catch (err) {
@@ -569,24 +587,24 @@ async function run() {
 
         })
         // user-to-admin api // dashbord > users 
-        app.patch('/user-to-admin/:id', tokenVarify, async (req, res) => {
+        app.patch('/user-to-admin/:id', tokenVarify, verifyAdmin, async (req, res) => {
             try {
                 const id = req.params.id;
-                // console.log(id);
                 const query = { _id: new ObjectId(id) }
                 const updateData = {
                     $set: {
-                        role: 'admin'
+                        role: "admin"
                     }
                 }
                 const options = { upsert: true };
                 const result = await usersCollection.updateOne(query, updateData, options)
-                // console.log(result);
                 res.send(result)
+                // console.log({ id });
+                // console.log('user to admin make ', result);
             }
             catch (err) {
-                res.send({ status: false })
-                console.log(err);
+                // res.send({ status: false })
+                console.log("user to admin make", err);
             }
         })
 
@@ -747,8 +765,8 @@ async function run() {
         })
 
 
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
