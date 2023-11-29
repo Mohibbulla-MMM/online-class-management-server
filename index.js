@@ -753,6 +753,22 @@ async function run() {
                 console.log(err);
             }
         })
+        // user enrole classes // useEnroleClass 
+        app.get("/user-p-info/:email", tokenVarify, async (req, res) => {
+            try {
+                const email = req.params?.email;
+                const query = { email: email }
+                const result = await paymentsCollection.find(query).toArray()
+                res.send(result || [])
+                // console.log(email);
+                // console.log(result);
+
+            }
+            catch (err) {
+                // res.send({ status: false })
+                console.log(err);
+            }
+        })
         // user enrole classes // home page // about/useabout 
         app.get("/enroll/all", async (req, res) => {
             try {
