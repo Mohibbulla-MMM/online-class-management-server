@@ -296,6 +296,26 @@ async function run() {
                 console.log("all class estimate counte ", err);
             }
         })
+        // class search  get  // navbar search text 
+        app.get('/classes-search', async (req, res) => {
+            try {
+                const text = req.query?.search;
+                // console.log(text);
+                const query = {
+                    title: { $regex: text, $options: 'i' },
+                    // category: { $regex: text, $options: 'i' }
+                }
+                const option = { status: "approved" }
+
+                const result = await classCollection.find(query, option).toArray()
+                res.send(result)
+                // console.log(result);
+            }
+            catch (err) {
+                // res.send({ status: false })
+                console.log("", err);
+            }
+        })
         //all class get  // useAllClasses publick route
         app.get('/classes/all', async (req, res) => {
             try {
